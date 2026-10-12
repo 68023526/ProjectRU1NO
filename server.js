@@ -8,19 +8,16 @@ const db = require('./db');
 const app = express();
 const SECRET_KEY = 'my_secret_key';
 
-// ตรวจสอบและสร้างโฟลเดอร์ uploads
 const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/uploads', express.static(uploadDir));
 
-// ตั้งค่า Multer สำหรับอัปโหลดรูปภาพหลักฐาน
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDir);
@@ -32,7 +29,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Middleware ตรวจสอบ JWT Token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -47,8 +43,6 @@ function authenticateToken(req, res, next) {
         next();
     });
 }
-
-// Middleware ตรวจสอบสิทธิ์ Admin
 function isAdmin(req, res, next) {
     if (req.user && req.user.role === 'admin') {
         next();
@@ -56,12 +50,6 @@ function isAdmin(req, res, next) {
         res.status(403).json({ error: 'ไม่มีสิทธิ์เข้าถึง (สำหรับผู้ดูแลระบบเท่านั้น)' });
     }
 }
-
-// ==========================================
-// API: Auth & User
-// ==========================================
-
-// สมัครสมาชิก
 app.post('/api/register', (req, res) => {
     const { name, phone, password } = req.body;
     db.run(
@@ -77,7 +65,6 @@ app.post('/api/register', (req, res) => {
     );
 });
 
-// เข้าสู่ระบบ
 app.post('/api/login', (req, res) => {
     const { phone, password } = req.body;
     db.get(
@@ -97,11 +84,6 @@ app.post('/api/login', (req, res) => {
     );
 });
 
-// ==========================================
-// API: Reports & Search (สำหรับผู้ใช้ทั่วไป)
-// ==========================================
-
-// แจ้งเบาะแสใหม่
 app.post('/api/reports', authenticateToken, upload.single('evidence'), (req, res) => {
     const { suspect_name, suspect_phone, bank_account, damage_amount, details } = req.body;
     const evidence_path = req.file ? req.file.filename : null;
@@ -122,7 +104,6 @@ app.post('/api/reports', authenticateToken, upload.single('evidence'), (req, res
     });
 });
 
-// ค้นหาประวัติคนโกง
 app.get('/api/reports/search', (req, res) => {
     const q = req.query.q || '';
     const sql = `
@@ -141,11 +122,6 @@ app.get('/api/reports/search', (req, res) => {
     });
 });
 
-// ==========================================
-// API: Admin Management (สำหรับผู้ดูแลระบบ)
-// ==========================================
-
-// 1. ดึงรายชื่อผู้ใช้ทั้งหมด
 app.get('/api/admin/users', authenticateToken, isAdmin, (req, res) => {
     db.all(`SELECT id, name, phone, role FROM Users ORDER BY id ASC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: 'ดึงข้อมูลผู้ใช้ล้มเหลว' });
@@ -153,7 +129,6 @@ app.get('/api/admin/users', authenticateToken, isAdmin, (req, res) => {
     });
 });
 
-// 2. สลับสิทธิ์ผู้ใช้ (User <-> Admin)
 app.put('/api/admin/users/:id/role', authenticateToken, isAdmin, (req, res) => {
     const { role } = req.body;
     const userId = req.params.id;
@@ -162,8 +137,6 @@ app.put('/api/admin/users/:id/role', authenticateToken, isAdmin, (req, res) => {
         res.json({ message: 'อัปเดตสิทธิ์เรียบร้อยแล้ว' });
     });
 });
-
-// 3. ดึงเคสแจ้งเบาะแสทั้งหมด
 app.get('/api/admin/reports', authenticateToken, isAdmin, (req, res) => {
     const sql = `
         SELECT Reports.*, Users.name as reporter_name 
@@ -176,8 +149,6 @@ app.get('/api/admin/reports', authenticateToken, isAdmin, (req, res) => {
         res.json(rows);
     });
 });
-
-// 4. อัปเดตสถานะเคส (approved / rejected / pending)
 app.put('/api/admin/reports/:id/status', authenticateToken, isAdmin, (req, res) => {
     const { status } = req.body;
     const reportId = req.params.id;
@@ -186,8 +157,6 @@ app.put('/api/admin/reports/:id/status', authenticateToken, isAdmin, (req, res) 
         res.json({ message: 'อัปเดตสถานะเรียบร้อยแล้ว' });
     });
 });
-
-// 5. ลบเคสแจ้งเบาะแส
 app.delete('/api/admin/reports/:id', authenticateToken, isAdmin, (req, res) => {
     const reportId = req.params.id;
     db.run(`DELETE FROM Reports WHERE id = ?`, [reportId], function (err) {
@@ -195,8 +164,6 @@ app.delete('/api/admin/reports/:id', authenticateToken, isAdmin, (req, res) => {
         res.json({ message: 'ลบรายงานเรียบร้อยแล้ว' });
     });
 });
-
-// เริ่มต้นเปิดใช้งาน Server
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
 });
