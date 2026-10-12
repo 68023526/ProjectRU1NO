@@ -1,10 +1,5 @@
-// ==========================================
-// 1. INITIALIZE & EVENT LISTENERS
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
-
-    // ผูก Event ให้ฟอร์มสมัครสมาชิก
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', (e) => {
@@ -12,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
             register();
         });
     }
-
-    // ผูก Event ให้ฟอร์มเข้าสู่ระบบ
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
@@ -21,8 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
             login();
         });
     }
-
-    // ผูก Event ให้ฟอร์มแจ้งเบาะแส
     const reportForm = document.getElementById('reportForm');
     if (reportForm) {
         reportForm.addEventListener('submit', (e) => {
@@ -31,10 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-// ==========================================
-// 2. NAVBAR & AUTH STATE
-// ==========================================
 function updateNavbar() {
     const navLinks = document.getElementById('nav-links');
     if (!navLinks) return;
@@ -70,16 +57,10 @@ function logout() {
     alert('ออกจากระบบเรียบร้อยแล้ว');
     window.location.href = 'login.html';
 }
-
-// ==========================================
-// 3. AUTHENTICATION (REGISTER & LOGIN)
-// ==========================================
 async function register() {
     const nameInput = document.getElementById('reg_name') || document.getElementById('name');
     const phoneInput = document.getElementById('reg_phone') || document.getElementById('phone');
     const passwordInput = document.getElementById('reg_password') || document.getElementById('password');
-
-    // ตรวจสอบค่าที่อ่านได้
     const name = nameInput ? nameInput.value.trim() : '';
     const phone = phoneInput ? phoneInput.value.trim() : '';
     const password = passwordInput ? passwordInput.value.trim() : '';
@@ -150,10 +131,6 @@ async function login() {
         alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
     }
 }
-
-// ==========================================
-// 4. REPORT FORM SUBMISSION
-// ==========================================
 async function submitReport() {
     const alertBox = document.getElementById('reportAlert');
     if (alertBox) alertBox.classList.add('d-none');
@@ -216,10 +193,6 @@ async function submitReport() {
         alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
     }
 }
-
-// ==========================================
-// 5. SEARCH FUNCTION
-// ==========================================
 async function searchReports() {
     const query = document.getElementById('searchInput')?.value || '';
     const resultsContainer = document.getElementById('searchResults');
