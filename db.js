@@ -12,7 +12,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
-    // 1. สร้างตาราง Users
     db.run(`
         CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,8 +21,6 @@ db.serialize(() => {
             role TEXT DEFAULT 'user'
         )
     `);
-
-    // 2. สร้างตาราง Reports (พร้อมคอลัมน์ status)
     db.run(`
         CREATE TABLE IF NOT EXISTS Reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,10 +36,7 @@ db.serialize(() => {
             FOREIGN KEY (user_id) REFERENCES Users(id)
         )
     `);
-
-    // 3. เพิ่มคอลัมน์ status สำหรับฐานข้อมูลเดิมที่เคยสร้างไว้แล้ว
     db.run(`ALTER TABLE Reports ADD COLUMN status TEXT DEFAULT 'pending'`, (err) => {
-        // หากมีคอลัมน์ status อยู่แล้วจะเกิด error ซึ่งสามารถปล่อยผ่านได้ปกติ
     });
 });
 
